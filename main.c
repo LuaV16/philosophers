@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:13:15 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/10 13:28:06 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/10 15:17:29 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,12 @@ void print_state(t_arg *rules, int id, const char *color, const char *msg)
     pthread_mutex_unlock(&rules->stop_mutex);
 }
 
-int check_death(long long actual_time, t_philo *philo)
+int check_death(t_philo *philo)
 {
     long long ms_since_last_meal;
 
     pthread_mutex_lock(&philo->last_meal_mutex);
-    ms_since_last_meal = actual_time - philo->last_meal;
+    ms_since_last_meal = get_time_ms() - philo->last_meal;
     pthread_mutex_unlock(&philo->last_meal_mutex);
     if (ms_since_last_meal > philo->rules->time_to_die)
     {
@@ -91,18 +91,24 @@ void eating(t_philo *philo)
     if (rules->number_of_philosophers == 1)
     {
         pthread_mutex_lock(&rules->forks[0]);
+        print_state(rules, philo->id, GREEN, "has taken a fork");
+        usleep(philo->rules->time_to_die * 1000);
         pthread_mutex_unlock(&rules->forks[0]);
         return ;
     }
     if (philo->id % 2 == 0)
     {
         pthread_mutex_lock(&rules->forks[right]);
+        print_state(rules, philo->id, GREEN, "has taken a fork");
         pthread_mutex_lock(&rules->forks[left]);
+        print_state(rules, philo->id, GREEN, "has taken a fork");
     }
     else
     {
         pthread_mutex_lock(&rules->forks[left]);
+        print_state(rules, philo->id, GREEN, "has taken a fork");
         pthread_mutex_lock(&rules->forks[right]);
+        print_state(rules, philo->id, GREEN, "has taken a fork");
     }
     pthread_mutex_lock(&philo->last_meal_mutex);
     philo->last_meal = get_time_ms();
@@ -157,11 +163,13 @@ void *monitor_routine(void *arg)
         check_eating_times(rules->philos);
         while (n < rules->number_of_philosophers)
         {
-            if (check_death(get_time_ms(), &all[n]) == 1)
+            if (check_death(&all[n]) == 1)
                 return (NULL);
             n++;
         }
-        usleep(1000);
+        if (get_stop(rules))
+            return (NULL);
+        usleep(1500);
     }
     return (NULL);
 }
@@ -175,8 +183,8 @@ void *philo_routine(void *philo)
     p->last_meal = get_time_ms();
     pthread_mutex_unlock(&p->last_meal_mutex);
     if (p->id % 2 == 0)
-        usleep(1000);
-    while (!check_death(get_time_ms(), philo))
+        usleep(p->rules->time_to_eat * 1000 / 2);
+    while (!get_stop(p->rules))
     {
         if (p->order == 1)
             eating(philo);
@@ -225,7 +233,6 @@ void free_and_join(t_philo *philos, t_arg *rules)
     }
     pthread_mutex_destroy(&rules->print_mutex);
     pthread_mutex_destroy(&rules->stop_mutex);
-    pthread_mutex_destroy(&rules->waiter_mutex);
     free(philos);
 }
 

@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 12:26:21 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/09 15:32:54 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/10 15:21:47 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,6 @@ int	init_mutex(t_philo *philos, t_arg *rules)
 		return (1);
 	if (pthread_mutex_init(&rules->stop_mutex, NULL) != 0)
 		return (1);
-	if (pthread_mutex_init(&rules->waiter_mutex, NULL) != 0)
-    return (1);
-	rules->available = (rules->number_of_philosophers > 1)
-						? rules->number_of_philosophers - 1
-						: 0;
 	n = 0;
 	while (n < rules->number_of_philosophers)
 	{
@@ -80,6 +75,7 @@ t_philo	*create_philos(int n_philos, t_arg *rules)
 				pthread_join(philos[i++].thread, NULL);
 			return (free(philos), NULL);
 		}
+		usleep(100);
 		n++;
 	}
 	return (philos);

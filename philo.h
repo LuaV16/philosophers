@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:47:01 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/09 15:32:22 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/10 14:47:54 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,6 @@ typedef struct s_arg
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	stop_mutex;
-	pthread_mutex_t	waiter_mutex;
-	int				available;
 	t_philo *philos;
 }					t_arg;
 
