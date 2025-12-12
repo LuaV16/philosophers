@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:47:01 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/10 14:47:54 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/12 11:15:28 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,12 +55,10 @@ typedef struct s_philo
 	long long		last_meal;
 	pthread_mutex_t	last_meal_mutex;
 	pthread_mutex_t	death_mutex;
-	pthread_mutex_t	order_mutex;
 	pthread_mutex_t	eat_times_mutex;
 	int				id;
 	int				is_dead;
 	int				times_that_philo_has_eaten;
-	int				order;
 }					t_philo;
 
 int					ft_isdigit(int c);

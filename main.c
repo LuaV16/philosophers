@@ -6,11 +6,29 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:13:15 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/10 15:17:29 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/12 12:45:32 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void sleep_ms(int time_ms)
+{
+    long start;
+    long time_diff;
+
+    start = get_time_ms();
+    while (1)
+    {
+        time_diff = get_time_ms() - start;
+        if (time_diff >= (long)time_ms)
+            break ;
+        if ((get_time_ms() - time_diff) > 5)
+            usleep(2000);
+        else
+            usleep(500);
+    }
+}
 
 void check_eating_times(t_philo *philo)
 {
@@ -58,12 +76,8 @@ void print_state(t_arg *rules, int id, const char *color, const char *msg)
 
 int check_death(t_philo *philo)
 {
-    long long ms_since_last_meal;
-
     pthread_mutex_lock(&philo->last_meal_mutex);
-    ms_since_last_meal = get_time_ms() - philo->last_meal;
-    pthread_mutex_unlock(&philo->last_meal_mutex);
-    if (ms_since_last_meal > philo->rules->time_to_die)
+    if ((get_time_ms() - philo->last_meal) > philo->rules->time_to_die)
     {
         pthread_mutex_lock(&philo->rules->stop_mutex);
         if (philo->rules->stop_flag == 0)
@@ -72,10 +86,13 @@ int check_death(t_philo *philo)
             pthread_mutex_lock(&philo->rules->print_mutex);
             printf(DARK_PURPLE "[%lld] Philosopher %i died\n", get_timestamp(philo->rules->start_time), philo->id);
             pthread_mutex_unlock(&philo->rules->print_mutex);
+            pthread_mutex_unlock(&philo->last_meal_mutex);
         }
         pthread_mutex_unlock(&philo->rules->stop_mutex);
+        pthread_mutex_unlock(&philo->last_meal_mutex);
         return (1);
     }
+    pthread_mutex_unlock(&philo->last_meal_mutex);
     return (0);
 }
 
@@ -88,15 +105,7 @@ void eating(t_philo *philo)
     rules = philo->rules;
     left = philo->id - 1;
     right = philo->id % rules->number_of_philosophers;
-    if (rules->number_of_philosophers == 1)
-    {
-        pthread_mutex_lock(&rules->forks[0]);
-        print_state(rules, philo->id, GREEN, "has taken a fork");
-        usleep(philo->rules->time_to_die * 1000);
-        pthread_mutex_unlock(&rules->forks[0]);
-        return ;
-    }
-    if (philo->id % 2 == 0)
+    if (philo->id % 2 != 0)
     {
         pthread_mutex_lock(&rules->forks[right]);
         print_state(rules, philo->id, GREEN, "has taken a fork");
@@ -113,17 +122,24 @@ void eating(t_philo *philo)
     pthread_mutex_lock(&philo->last_meal_mutex);
     philo->last_meal = get_time_ms();
     pthread_mutex_unlock(&philo->last_meal_mutex);
-    pthread_mutex_lock(&philo->order_mutex);
-    philo->order = 2;
-    pthread_mutex_unlock(&philo->order_mutex);
     print_state(rules, philo->id, YELLOW, "is eating");
     pthread_mutex_lock(&philo->eat_times_mutex);
     philo->times_that_philo_has_eaten += 1;
     pthread_mutex_unlock(&philo->eat_times_mutex);
     check_eating_times(philo);
-    usleep(rules->time_to_eat * 1000);   
+    sleep_ms(rules->time_to_eat);
     pthread_mutex_unlock(&rules->forks[left]);
     pthread_mutex_unlock(&rules->forks[right]);
+}
+
+void one_philo(t_philo *philo)
+{
+    t_arg *rules;
+    
+    rules = philo->rules;
+    pthread_mutex_lock(&rules->forks[0]);
+    print_state(rules, philo->id, GREEN, "has taken a fork");
+    sleep_ms(rules->time_to_die);
 }
 
 void sleeping(t_philo *philo)
@@ -131,11 +147,8 @@ void sleeping(t_philo *philo)
     t_arg *rules;
 
     rules = philo->rules;
-    pthread_mutex_lock(&philo->order_mutex);
-    philo->order = 3;
-    pthread_mutex_unlock(&philo->order_mutex);
     print_state(rules, philo->id, BLUE, "is sleeping");
-    usleep(philo->rules->time_to_sleep * 1000);
+    sleep_ms(rules->time_to_sleep);
 }
 
 void thinking(t_philo *philo)
@@ -143,9 +156,6 @@ void thinking(t_philo *philo)
     t_arg *rules;
 
     rules = philo->rules;
-    pthread_mutex_lock(&philo->order_mutex);
-    philo->order = 1;
-    pthread_mutex_unlock(&philo->order_mutex);
     print_state(rules, philo->id, RED, "is thinking");
 }
 
@@ -157,6 +167,12 @@ void *monitor_routine(void *arg)
 
     rules = (t_arg *)arg;
     all = rules->philos;
+    if (rules->number_of_philosophers == 1)
+    {
+        one_philo(rules->philos);
+        return (NULL);
+    }
+        
     while (1)
     {
         n = 0;
@@ -169,7 +185,7 @@ void *monitor_routine(void *arg)
         }
         if (get_stop(rules))
             return (NULL);
-        usleep(1500);
+        sleep_ms(500);
     }
     return (NULL);
 }
@@ -182,19 +198,19 @@ void *philo_routine(void *philo)
     pthread_mutex_lock(&p->last_meal_mutex);
     p->last_meal = get_time_ms();
     pthread_mutex_unlock(&p->last_meal_mutex);
+    p->rules->start_time = get_time_ms();
     if (p->id % 2 == 0)
-        usleep(p->rules->time_to_eat * 1000 / 2);
+        sleep_ms(p->rules->time_to_eat);
     while (!get_stop(p->rules))
     {
-        if (p->order == 1)
-            eating(philo);
-        if (get_stop(p->rules)) break;
-        if (p->order == 2)
-            sleeping(philo);
-        if (get_stop(p->rules)) break; 
-        if (p->order == 3)
-            thinking(philo);
-        if (get_stop(p->rules)) break; 
+    eating(philo);
+    if (get_stop(p->rules)) break;
+    sleeping(philo);
+    if (get_stop(p->rules)) break; 
+    thinking(philo);
+    if (get_stop(p->rules)) break;
+    if (p->rules->number_of_philosophers % 2 != 2)
+        sleep_ms(1);
     }
     return (NULL);
 }
@@ -215,7 +231,6 @@ void free_and_join(t_philo *philos, t_arg *rules)
     while (n < rules->number_of_philosophers)
     {
         pthread_mutex_destroy(&philos[n].death_mutex);
-        pthread_mutex_destroy(&philos[n].order_mutex);
         pthread_mutex_destroy(&philos[n].last_meal_mutex);
         pthread_mutex_destroy(&philos[n].eat_times_mutex);
         n++;

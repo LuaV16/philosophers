@@ -5,7 +5,7 @@ SRC = main.c utils.c parse.c init.c
 OBJ := $(SRC:%.c=%.o)
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -Werror -pthread -O3
 
 all: $(NAME)
 

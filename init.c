@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 12:26:21 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/10 15:21:47 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/12 12:01:03 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,6 @@ int	init_mutex(t_philo *philos, t_arg *rules)
 			return (1);
 		if (pthread_mutex_init(&philos[n].death_mutex, NULL) != 0)
 			return (1);
-		if (pthread_mutex_init(&philos[n].order_mutex, NULL) != 0)
-			return (1);
 		if (pthread_mutex_init(&philos[n].eat_times_mutex, NULL) != 0)
 			return (1);
 		n++;
@@ -48,7 +46,6 @@ void	fill_philos(t_philo *philos, t_arg *rules, int n)
 	philos[n].last_meal = rules->start_time;
 	philos[n].is_dead = 0;
 	philos[n].times_that_philo_has_eaten = 0;
-	philos[n].order = 1;
 }
 
 t_philo	*create_philos(int n_philos, t_arg *rules)
@@ -93,7 +90,7 @@ t_arg	save_values(int argc, char *argv[])
 		ft_atoi_parse(argv[5], &args.number_of_times_each_philosopher_must_eat);
 	else
 		args.number_of_times_each_philosopher_must_eat = -1;
-	args.start_time = get_time_ms();
+	//args.start_time = get_time_ms();
 	args.stop_flag = 0;
 	return (args);
 }
