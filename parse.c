@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/01 00:25:21 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/01 00:44:09 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/12 15:40:47 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ int	check_parsing(int argc, char *argv[])
 	int	error;
 	int	number;
 
+	number = 0;
 	if (argc < 5 || argc > 6)
 		return (print_error(1), 1);
 	error = check_all_args(argv);

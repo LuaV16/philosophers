@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:47:01 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/12 11:15:28 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/12 16:34:12 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,5 +70,11 @@ long long get_timestamp(long long start_time_ms);
 void *philo_routine(void *philo);
 t_philo	*create_philos(int n_philos, t_arg *rules);
 t_arg	save_values(int argc, char *argv[]);
+void	eating(t_philo *philo);
+void	sleeping(t_philo *philo);
+void	thinking(t_philo *philo);
+void	sleep_ms(int time_ms);
+void	print_state(t_arg *rules, int id, const char *color, const char *msg);
+void	check_eating_times(t_philo *philo);
 
 #endif
