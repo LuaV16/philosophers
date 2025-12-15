@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 12:26:21 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/12 12:01:03 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/15 23:41:42 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	init_mutex(t_philo *philos, t_arg *rules)
 {
 	int	n;
 
-	rules->forks = malloc(rules->number_of_philosophers * sizeof *rules->forks);
+	rules->forks = malloc(rules->n_of_philo * sizeof(*rules->forks));
 	if (!rules->forks)
 		return (1);
 	if (pthread_mutex_init(&rules->print_mutex, NULL) != 0)
@@ -24,7 +24,7 @@ int	init_mutex(t_philo *philos, t_arg *rules)
 	if (pthread_mutex_init(&rules->stop_mutex, NULL) != 0)
 		return (1);
 	n = 0;
-	while (n < rules->number_of_philosophers)
+	while (n < rules->n_of_philo)
 	{
 		if (pthread_mutex_init(&rules->forks[n], NULL) != 0)
 			return (1);
@@ -54,7 +54,7 @@ t_philo	*create_philos(int n_philos, t_arg *rules)
 	int		n;
 	int		i;
 
-	philos = malloc(rules->number_of_philosophers * sizeof(*philos));
+	philos = malloc(rules->n_of_philo * sizeof(*philos));
 	if (!philos)
 		return (NULL);
 	rules->philos = philos;
@@ -72,7 +72,6 @@ t_philo	*create_philos(int n_philos, t_arg *rules)
 				pthread_join(philos[i++].thread, NULL);
 			return (free(philos), NULL);
 		}
-		usleep(100);
 		n++;
 	}
 	return (philos);
@@ -82,15 +81,15 @@ t_arg	save_values(int argc, char *argv[])
 {
 	t_arg	args;
 
-	ft_atoi_parse(argv[1], &args.number_of_philosophers);
+	ft_atoi_parse(argv[1], &args.n_of_philo);
 	ft_atoi_parse(argv[2], &args.time_to_die);
 	ft_atoi_parse(argv[3], &args.time_to_eat);
 	ft_atoi_parse(argv[4], &args.time_to_sleep);
 	if (argc > 5)
-		ft_atoi_parse(argv[5], &args.number_of_times_each_philosopher_must_eat);
+		ft_atoi_parse(argv[5], &args.n_must_eat);
 	else
-		args.number_of_times_each_philosopher_must_eat = -1;
-	//args.start_time = get_time_ms();
+		args.n_must_eat = -1;
 	args.stop_flag = 0;
+	args.start_time = get_time_ms();
 	return (args);
 }
