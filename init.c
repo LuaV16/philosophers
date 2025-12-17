@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 12:26:21 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/15 23:41:42 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/16 12:49:19 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,11 +48,31 @@ void	fill_philos(t_philo *philos, t_arg *rules, int n)
 	philos[n].times_that_philo_has_eaten = 0;
 }
 
+void	create_loop(int n_philos, t_philo *philos)
+{
+	int	n;
+	int	i;
+
+	n = 0;
+	while (n < n_philos)
+	{
+		if (pthread_create(&philos[n].thread, NULL, philo_routine,
+				&philos[n]) != 0)
+		{
+			i = 0;
+			while (i < n)
+				pthread_join(philos[i++].thread, NULL);
+			free(philos);
+			return ;
+		}
+		n++;
+	}
+}
+
 t_philo	*create_philos(int n_philos, t_arg *rules)
 {
 	t_philo	*philos;
 	int		n;
-	int		i;
 
 	philos = malloc(rules->n_of_philo * sizeof(*philos));
 	if (!philos)
@@ -60,20 +80,15 @@ t_philo	*create_philos(int n_philos, t_arg *rules)
 	rules->philos = philos;
 	if (init_mutex(philos, rules) == 1)
 		return (NULL);
+	rules->start_time = get_time_ms();
 	n = 0;
 	while (n < n_philos)
 	{
 		fill_philos(philos, rules, n);
-		if (pthread_create(&philos[n].thread, NULL, philo_routine,
-				&philos[n]) != 0)
-		{
-			i = 0;
-			while (i < n)
-				pthread_join(philos[i++].thread, NULL);
-			return (free(philos), NULL);
-		}
 		n++;
 	}
+	n = 0;
+	create_loop(n_philos, philos);
 	return (philos);
 }
 
@@ -90,6 +105,5 @@ t_arg	save_values(int argc, char *argv[])
 	else
 		args.n_must_eat = -1;
 	args.stop_flag = 0;
-	args.start_time = get_time_ms();
 	return (args);
 }

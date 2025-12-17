@@ -6,7 +6,7 @@
 /*   By: lvargas- <lvargas-@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 20:13:15 by lvargas-          #+#    #+#             */
-/*   Updated: 2025/12/15 23:53:31 by lvargas-         ###   ########.fr       */
+/*   Updated: 2025/12/17 15:09:44 by lvargas-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	*monitor_routine(void *arg)
 		}
 		if (get_stop(rules))
 			return (NULL);
-		sleep_ms(500);
+		sleep_ms(5);
 	}
 	return (NULL);
 }
